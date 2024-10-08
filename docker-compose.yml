@@ -1,0 +1,55 @@
+services:
+  client:
+    image: buraksefil17/restaurant-client
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_SERVER_URL="http://3.239.184.43/api"
+    networks:
+      - restaurantapp_network
+
+  auth:
+    build:
+      context: ./backend/auth
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+    networks:
+      - restaurantapp_network
+
+  discounts:
+    build:
+      context: ./backend/discounts
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+    networks:
+      - restaurantapp_network
+
+  items:
+    build:
+      context: ./backend/items
+      dockerfile: Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      - PORT=3003
+    networks:
+      - restaurantapp_network
+
+  haproxy:
+    image: haproxy:alpine
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    ports:
+      - "80:80"
+    networks:
+      - restaurantapp_network
+
+networks:
+  restaurantapp_network:
+    driver: bridge

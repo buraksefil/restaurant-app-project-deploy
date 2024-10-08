@@ -1,0 +1,90 @@
+---
+- name: Deploy Dockerized Applications
+  hosts: all
+  become: yes
+  tasks:
+     - name: Update APT package manager
+       apt:
+         update_cache: yes
+
+     - name: Install Docker
+       apt:
+         name: docker.io
+         state: present
+
+     - name: Ensure Docker service is running
+       service:
+         name: docker
+         state: started
+         enabled: true
+
+     - name: Install Docker Compose
+       get_url:
+         url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+         dest: /usr/local/bin/docker-compose
+         mode: '0755'
+     
+     - name: Install npm
+       become: yes
+       shell: apt install npm
+
+
+     - name: Clone Git repository
+       git:
+         repo: 'https://github.com/buraksefil/restaurant-app-project.git'
+         dest: /opt/restaurantapp
+
+     - name: Check if /opt/restaurantapp exists
+       become: yes
+       delegate_to: auth_host
+       command: ls /opt/restaurantapp
+
+- name: Deploy Client
+  hosts: client_host
+  become: yes
+  tasks:    
+     - name: Run Client Service
+       become: yes
+       shell: docker-compose up -d client
+       args:
+         chdir: /opt/restaurantapp
+
+- name: Deploy Auth
+  hosts: auth_host
+  become: yes
+  tasks:
+     - name: Run Auth Service
+       become: yes
+       command: /usr/local/bin/docker-compose up -d auth
+       args:
+         chdir: /opt/restaurantapp
+
+- name: Deploy Discount
+  hosts: discount_service
+  become: yes
+  tasks:
+     - name: Run Discount Service
+       become: yes
+       shell: docker-compose up -d discounts
+       args:
+        chdir: /opt/restaurantapp
+
+- name: Deploy Item
+  hosts: item_host
+  become: yes
+  tasks:    
+     - name: Run Item Service
+       become: yes
+       shell: docker-compose up -d items
+       args:
+         chdir: /opt/restaurantapp
+
+- name: Deploy Haproxy
+  hosts: haproxy_host
+  become: yes
+  tasks:    
+     - name: Run Haproxy Service
+       become: yes
+       shell: docker-compose up -d haproxy
+       args:
+         chdir: /opt/restaurantapp
