@@ -9,6 +9,9 @@ RUN npm install
 COPY . .
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+ENV REACT_APP_SERVER_URL="http://3.235.95.197/api"
+
 RUN npm run build
 
 #STAGE 2

@@ -1,10 +1,10 @@
 services:
   client:
-    image: pablop115/client
+    image: buraksefil17/restaurant-client
     ports:
       - "3000:80"
     environment:
-      - REACT_APP_SERVER_URL="http://3.239.184.43/api"
+      - REACT_APP_SERVER_URL="http://haproxy/api"
     networks:
       - restaurantapp_network
 
@@ -50,6 +50,19 @@ services:
     networks:
       - restaurantapp_network
 
+  mongodb:
+    image: mongo:4.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+    networks:
+      - restaurantapp_network    
+
 networks:
   restaurantapp_network:
     driver: bridge
+
+volumes:
+  mongo_data:

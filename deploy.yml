@@ -24,20 +24,15 @@
          dest: /usr/local/bin/docker-compose
          mode: '0755'
      
-     - name: Install npm
-       become: yes
-       shell: apt install npm
-
-
      - name: Clone Git repository
        git:
-         repo: 'https://github.com/buraksefil/restaurant-app-project.git'
-         dest: /opt/restaurantapp
+         repo: 'https://github.com/buraksefil/restaurant-app-project-deploy.git'
+         dest: /restaurantapp
 
      - name: Check if /opt/restaurantapp exists
        become: yes
        delegate_to: auth_host
-       command: ls /opt/restaurantapp
+       command: ls /restaurantapp
 
 - name: Deploy Client
   hosts: client_host
@@ -47,7 +42,7 @@
        become: yes
        shell: docker-compose up -d client
        args:
-         chdir: /opt/restaurantapp
+         chdir: /restaurantapp
 
 - name: Deploy Auth
   hosts: auth_host
@@ -55,19 +50,19 @@
   tasks:
      - name: Run Auth Service
        become: yes
-       command: /usr/local/bin/docker-compose up -d auth
+       command: docker-compose up -d auth
        args:
-         chdir: /opt/restaurantapp
+         chdir: /restaurantapp
 
 - name: Deploy Discount
-  hosts: discount_service
+  hosts: discount_host
   become: yes
   tasks:
      - name: Run Discount Service
        become: yes
        shell: docker-compose up -d discounts
        args:
-        chdir: /opt/restaurantapp
+        chdir: /restaurantapp
 
 - name: Deploy Item
   hosts: item_host
@@ -77,7 +72,7 @@
        become: yes
        shell: docker-compose up -d items
        args:
-         chdir: /opt/restaurantapp
+         chdir: /restaurantapp
 
 - name: Deploy Haproxy
   hosts: haproxy_host
@@ -87,4 +82,15 @@
        become: yes
        shell: docker-compose up -d haproxy
        args:
-         chdir: /opt/restaurantapp
+         chdir: /restaurantapp
+
+- name: Deploy MongoDB
+  hosts: mongodb_host
+  become: yes
+  tags: mongodb
+  tasks:    
+     - name: Install Mongodb
+       become: yes
+       shell: docker-compose up -d mongodb
+       args:
+         chdir: /restaurantapp

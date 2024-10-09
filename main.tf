@@ -4,7 +4,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket         = "my-terraform-restaurant-bucket"
+    bucket         = "burak-terraform-state-bucket"
     key            = "terraform/state/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "terraform-lock-table"
@@ -190,4 +190,81 @@ resource "aws_instance" "haproxy_service" {
   }  
 }
 
+resource "aws_instance" "mongodb" {
+  ami = "ami-0866a3c8686eaeeba"
+  instance_type = "t2.micro"
+  subnet_id = aws_subnet.public_subnet_1.id
+  associate_public_ip_address = true
+  security_groups = [aws_security_group.web_sg.id]
+  key_name = "restaurant_key"
+    
+  tags = {
+    Name = "mongodb"
+  }  
+}
 
+resource "aws_launch_template" "app_launch_template" {
+  name_prefix                 = "app-launch-template"
+  image_id                    = "ami-0866a3c8686eaeeba" 
+  instance_type               = "t2.micro"
+  key_name                    = "restaurant_key"
+  vpc_security_group_ids      = [aws_security_group.web_sg.id]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_autoscaling_group" "app_asg" {
+  desired_capacity     = 2
+  max_size             = 5
+  min_size             = 1
+  vpc_zone_identifier  = [aws_subnet.public_subnet_1.id]
+
+  launch_template {
+    id      = aws_launch_template.app_launch_template.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "app-instance"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_autoscaling_policy" "scale_out" {
+  name                   = "scale-out"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.app_asg.name
+}
+
+resource "aws_autoscaling_policy" "scale_in" {
+  name                   = "scale-in"
+  scaling_adjustment     = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.app_asg.name
+}
+
+resource "aws_cloudwatch_log_group" "app_log_group" {
+  name              = "/app/logs"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_metric_alarm" "cpu_high" {
+  alarm_name          = "cpu_high"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 120
+  statistic           = "Average"
+  threshold           = 75
+  alarm_actions       = ["arn:aws:sns:us-east-1:911167887716:alarm-notifications"]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.app_asg.name
+  }
+}
