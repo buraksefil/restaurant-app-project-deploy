@@ -46,9 +46,7 @@
     
     - name: remove existing network
       become: yes
-      shell: docker network rm restaurantapp_network
-      args:
-        chdir: /restaurantapp  
+      shell: docker network rm restaurantapp_network 
 
 - name: Deploy Client
   hosts: client_host
