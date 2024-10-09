@@ -190,18 +190,6 @@ resource "aws_instance" "haproxy_service" {
   }  
 }
 
-resource "aws_instance" "mongodb" {
-  ami = "ami-0866a3c8686eaeeba"
-  instance_type = "t2.micro"
-  subnet_id = aws_subnet.public_subnet_1.id
-  associate_public_ip_address = true
-  security_groups = [aws_security_group.web_sg.id]
-  key_name = "restaurant_key"
-    
-  tags = {
-    Name = "mongodb"
-  }  
-}
 
 resource "aws_launch_template" "app_launch_template" {
   name_prefix                 = "app-launch-template"

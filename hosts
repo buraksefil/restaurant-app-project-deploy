@@ -8,5 +8,3 @@ haproxy_host ansible_host=3.239.167.16 ansible_user=ubuntu ansible_ssh_private_k
 auth_host ansible_host=44.192.3.149 ansible_user=ubuntu ansible_ssh_private_key_file=/Users/user/Desktop/Ironhack-Projects/3/restaurant-app-project/restaurant_key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 [client_host]
 client_host ansible_host=44.214.6.70 ansible_user=ubuntu ansible_ssh_private_key_file=/Users/user/Desktop/Ironhack-Projects/3/restaurant-app-project/restaurant_key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-[mongodb_host]
-mongodb_host ansible_host=3.92.81.39 ansible_user=ubuntu ansible_ssh_private_key_file=/Users/user/Desktop/Ironhack-Projects/3/restaurant-app-project/restaurant_key.pem ansible_ssh_common_args='-o StrictHostKeyChecking=no'

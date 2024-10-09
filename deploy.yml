@@ -24,6 +24,11 @@
          dest: /usr/local/bin/docker-compose
          mode: '0755'
      
+     - name: Install HAProxy
+       apt:
+         name: haproxy
+         state: present
+
      - name: Clone Git repository
        git:
          repo: 'https://github.com/buraksefil/restaurant-app-project-deploy.git'
@@ -77,20 +82,17 @@
 - name: Deploy Haproxy
   hosts: haproxy_host
   become: yes
-  tasks:    
+  tasks:
+     - name: Copy HAProxy config file
+       copy:
+         src: ./haproxy.cfg  # Path to your local haproxy.cfg
+         dest: /restaurantapp/haproxy.cfg  # Destination on the remote server
+         mode: '0644'
+          
      - name: Run Haproxy Service
        become: yes
        shell: docker-compose up -d haproxy
        args:
          chdir: /restaurantapp
 
-- name: Deploy MongoDB
-  hosts: mongodb_host
-  become: yes
-  tags: mongodb
-  tasks:    
-     - name: Install Mongodb
-       become: yes
-       shell: docker-compose up -d mongodb
-       args:
-         chdir: /restaurantapp
+
