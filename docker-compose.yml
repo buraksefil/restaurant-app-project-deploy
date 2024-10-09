@@ -53,4 +53,4 @@ services:
 networks:
   restaurantapp_network:
     name: restaurantapp_network
-    driver: bridge
+    driver: overlay
