@@ -34,6 +34,12 @@
         path: /restaurantapp
         state: absent
 
+    - name: remove existing network
+      become: yes
+      shell: docker network rm restaurantapp_network
+      args:
+        chdir: /restaurantapp
+
     - name: Clone Git repository
       git:
         repo: "https://github.com/buraksefil/restaurant-app-project-deploy.git"
