@@ -52,4 +52,5 @@ services:
 
 networks:
   restaurantapp_network:
+    driver: bridge
     external: true
